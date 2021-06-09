@@ -25,7 +25,7 @@ from wrf import (getvar, vinterp, interplevel, to_np, get_cartopy, latlon_coords
 
 # Get WRF output data:
 
-filename_list = ['./wrfout_example.nc']
+filename_list = ['./Data/wrfout_example.nc']
 file_num = 0
 
 wrf_file = Dataset(filename_list[file_num])
@@ -73,60 +73,43 @@ def distance(origin, destination):
 
 # Get variable and interpolate:
 
-def get_var_interpolate(wrf_file):
+def get_var_and_interpolate(wrf_file):
 
     wrf_var = getvar(wrf_file, 'REFL_10CM')
 
-# print(dbz)
+    # Interpolate reflectivity to pressure levels:
 
-# Interpolate reflectivity to pressure levels:
+    # interp_levels = [850]
+    # interp_field = vinterp(wrf_file,
+    #                        field=wrf_dbz,
+    #                        vert_coord='p',
+    #                        interp_levels=interp_levels,
+    #                        extrapolate=True,
+    #                        field_type='none',
+    #                        log_p=True)
 
-# interp_levels = [850]
-# interp_field = vinterp(wrf_file,
-#                        field=wrf_dbz,
-#                        vert_coord='p',
-#                        interp_levels=interp_levels,
-#                        extrapolate=True,
-#                        field_type='none',
-#                        log_p=True)
+    # Interpolate reflectivity to hieghts:
 
-# Interpolate reflectivity to hieghts:
+    interp_levels = np.linspace(0,15,31)
+    # print(interp_levels)
+    interp_field = vinterp(wrf_file,
+                           field=wrf_var,
+                           vert_coord='ght_msl',
+                           interp_levels=interp_levels,
+                           extrapolate=True,
+                           field_type='none'
+                          )
 
-interp_levels = np.linspace(0,15,31)
-# print(interp_levels)
-interp_field = vinterp(wrf_file,
-                       field=wrf_var,
-                       vert_coord='ght_msl',
-                       interp_levels=interp_levels,
-                       extrapolate=True,
-                       field_type='none'
-                      )
-# print(interp_field)
-# print(type(interp_field))
-# print(interp_field.sizes)
-# print(latlon_coords(interp_field))
+    return interp_field interp_levels
 
+    # Reshaping data:
 
-# In[18]:
-
-
-# Reshaping data:
-
-# interp_field = interp_field.squeeze('interp_level')
-# print(interp_field.shape)
-
-# interp_field_3d = interp_field.squeeze('interp_level')
-
-
-# In[19]:
+    # interp_field = interp_field.squeeze('interp_level')
+    # interp_field_3d = interp_field.squeeze('interp_level')
 
 
 # Get model output time:
 wrf_valid_datetime = interp_field['Time'].dt.strftime('%Y-%m-%d %H:%M:%S')
-
-
-# In[20]:
-
 
 # # Test plot:
 
@@ -218,27 +201,6 @@ wrf_valid_datetime = interp_field['Time'].dt.strftime('%Y-%m-%d %H:%M:%S')
 # # Save figure:
 # # fig_name = './wrfoutdbz_' + str(interp_levels) + '_' + interp_field['Time'].dt.strftime('%Y-%m-%d_%H:%M:%S').values
 # # plt.savefig(fig_name, transparent=False, edgecolor='white', bbox_inches="tight", dpi=300)
-
-
-# In[21]:
-
-
-# print(type(interp_field_2d))
-# print(interp_field_2d)
-# print(interp_field_2d['XLONG'].values[0,:])
-# print(interp_field_2d['XLAT'].values[:,0])
-# print(np.array(interp_field_2d['XLONG'].values.min()))
-# print(np.array(interp_field_2d['XLAT'].values.min()))
-# print(pyart.config.get_metadata('origin_altitude'))
-# print(interp_field_2d.values.shape)
-# print(distance([23.5,120],[23.5,130]))
-
-# print(str(interp_levels[0]))
-# print(interp_field_2d['Time'].dt.strftime('%Y-%m-%d_%H:%M:%S').values)
-
-
-# In[22]:
-
 
 # Convert to Pyart grid object:
 
